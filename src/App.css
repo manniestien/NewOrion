@@ -36,3 +36,16 @@
     transform: rotate(360deg);
   }
 }
+.traits{
+  margin-left: 2em;
+}
+.drops{
+  display: flex;
+  justify-content: center;
+  
+}
+.custom-file{
+  width: 40%;
+  margin: auto;
+  padding: 10px;
+}
