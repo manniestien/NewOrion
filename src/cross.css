@@ -1,0 +1,18 @@
+.MuiAutocomplete-clearIndicator {
+    padding: 4px;
+    visibility: hidden;
+    margin-right: -2px;
+    display: none;
+}
+#ideal {
+    background: lightblue;
+}
+#checkk {
+  content: "\2714";
+  color: #00CC99;
+    font-size: medium;
+  /* padding-left: 13.6em; */
+}
+.anychart-credits-text, .anychart-credits-logo{
+  display: none;
+}

@@ -49,3 +49,15 @@
   margin: auto;
   padding: 10px;
 }
+#ideal {
+    background: lightblue;
+    font-weight: bold;
+}
+
+.icon-red{
+  color: red;
+}
+
+.icon-green{ 
+  color: green;
+}

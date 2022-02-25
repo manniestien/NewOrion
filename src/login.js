@@ -1,79 +1,93 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Switch, Routes, BrowserRouter } from "react-router-dom";
-import PSI from "./PSI/HomePage"
-import CRANEBERRY from "./CANEBERRY/HomePage"
-import MORSON from "./MORSON_CORS/HomePage"
-import CDG from "./CDG/HomePage"
+import React, { Component } from "react";
+import {
+  BrowserRouter as Router,
+  Route,
+  Switch,
+  Routes,
+  BrowserRouter,
+} from "react-router-dom";
+import PSI from "./PSI/HomePage";
+import CRANEBERRY from "./CANEBERRY/HomePage";
+import MORSON from "./MORSON_CORS/HomePage";
+import CDG from "./CDG/HomePage";
 import { useHistory } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { Container, Button, Row, Col, Form } from "react-bootstrap";
+import { PropTypes } from 'react-redux'
+import  { login }from './LoginActions'
+import { withRouter } from "react-router-dom"; // new import
+import { connect } from "react-redux";          // new import 
 
-const Login = () => {
+
+
+
+
+
+class Login extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      username: "",
+      password: "",
+    };
+    this.onChange = this.onChange.bind(this)
+    this.onLoginClick = this.onLoginClick.bind(this)
+  }
+
+  onChange = (e) => {
+    this.setState({ [e.target.name]: e.target.value });
+  };
+
+  onLoginClick = () => {
+    var userData = {
+      username: this.state.username,
+      password: this.state.password,
+    };
+     console.log(userData);
+    this.props.login(userData, "/PSI"); 
+  }
+ 
   
-  const [formValue, setformValue] = React.useState({
-    email: '',
-    password: ''
-  });
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const { email, password } = formValue;
-    if (email && email.trim() && password && password.trim()) {
-      localStorage.setItem('token', '123');
-    }
+  render() {
+    return (
+      <Container>
+        <Form>
+          <Form.Group controlId="usernameId">
+            <Form.Label>User name</Form.Label>
+            <Form.Control
+              type="text"
+              name="username"
+              placeholder="Enter user name"
+              value={this.state.username}
+              onChange={this.onChange}
+            />
+          </Form.Group>
+
+          <Form.Group controlId="passwordId">
+            <Form.Label>Your password</Form.Label>
+            <Form.Control
+              type="password"
+              name="password"
+              placeholder="Enter password"
+              value={this.state.password}
+              onChange={this.onChange}
+            />
+          </Form.Group>
+        </Form>
+        <br></br>
+        <Button variant="danger" onClick={this.onLoginClick}>
+          Login
+        </Button>
+      </Container>
+    );
   }
-  const history = useHistory();
+}
 
-  const handleChange = (event) => {
-    setformValue({
-      ...formValue,
-      [event.target.name]: event.target.value
-    })
-  }
 
-  const ClientRoute = () => {
-    
-    const { email, password } = formValue;
-    console.log(email)
-      if (email === "psi@x.com"){
-       history.push("/PSI")
-      }
-      else if(email === "crane@x.com"){
-        history.push("/CRANEBERRY")
-      }
-      else if(email === "monson@email.com"){
-        history.push("/MONSON")
-      }
-      else if(email === "CDG@x.com"){
-        history.push("/CDG")
-      }
-       
+const mapStateToProps = (state) => ({
+  auth: state.auth,
+});
 
-      }
-  return (
-    <form onSubmit={handleSubmit}>
-      <p>Login to Get Started</p>
-      <input
-        type="email"
-        name="email"
-        placeholder="enter an email"
-        value={formValue.email}
-        onChange={handleChange}
-      />
-      <input
-        type="password"
-        name="password"
-        placeholder="enter a password"
-        value={formValue.password}
-        onChange={handleChange}
-      />
-      <button
-        color="primary"
-        type="submit"
-        onClick={ ClientRoute}
-      >
-        Login
-      </button>
-    </form>
-  )
-};
 
-export default Login;
+  

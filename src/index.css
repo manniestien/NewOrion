@@ -11,3 +11,73 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* .parentInput{
+  justify-content: center;
+} */
+form{
+  display: inline-block;
+  padding-top: 2em;
+
+}
+
+
+table{
+  margin-top: 3em;
+  margin-right: 2px;
+ 
+
+}
+.card-1 {
+    border: none;
+    border-radius: 10px;
+    width: 100%;
+    background-color: #fff;
+    margin-top: 3em;
+  margin-right: 2em;
+}
+
+#showData{
+  display: flex;
+
+}
+
+.anychart-credits-text{
+  display: none;
+}
+#showPie{
+  display: flex;
+}
+#showChart{
+  display: flex;
+ 
+}
+#ac-chart-container{
+  display: flex;
+}
+/* #forecastBtn button{
+padding-top:  1em;
+  left: auto;
+  border: 3px solid blue;
+  justify-content: flex-start;
+
+} */
+
+#results{
+  padding-left: 2em;
+  align-items: center;
+  margin-left: -26em;
+}
+#chat{
+  padding-right: 3em;
+  margin-left: -10em;
+}
+#pieChat{
+  padding-right: 3em;
+}
+
+
+
+
+
+
