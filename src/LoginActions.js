@@ -12,7 +12,7 @@ import {
 } from "./LoginTypes";
 import { setAxiosAuthToken, toastOnError } from "./Utils";
 import { propTypes } from "react-bootstrap/esm/Image";
-import HomePage from "./PSI/HomePage";
+import HomePage from "./HomePage";
 
 axios.defaults.baseURL = "http://192.168.128.237:8002/";
 

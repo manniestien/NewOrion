@@ -50,18 +50,13 @@ table{
 }
 #showChart{
   display: flex;
+  padding-top: 1em;
  
 }
 #ac-chart-container{
   display: flex;
 }
-/* #forecastBtn button{
-padding-top:  1em;
-  left: auto;
-  border: 3px solid blue;
-  justify-content: flex-start;
 
-} */
 
 #results{
   padding-left: 2em;

@@ -4,7 +4,7 @@ import { connect } from "react-redux";          // new import
 import PropTypes from "prop-types";             // new import 
 import { Link } from "react-router-dom";
 import { Container, Button, Row, Col, Form } from "react-bootstrap";
-import Psi from "./PSI/HomePage";
+ import Psi from "./HomePage";
 
 import { login } from "./LoginActions.js";      // new import 
 

@@ -4,15 +4,12 @@ import { styled } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
 import Button from "@restart/ui/esm/Button";
 import Select from "react-select";
-import "../home.css";
-import { createStore } from "redux";
-import reducer from "../reducers/LoginReducer";
+import "./home.css";
 import axios from "axios";
 import PropTypes from "prop-types";
-import { getUsers } from "../LoginActions";
-import { getClientTraits } from "../LoginActions";
+import { getUsers } from "./LoginActions";
+import { getClientTraits } from "./LoginActions";
 import { connect } from "react-redux";
-import Cross from "../cross";
 
 const Item = styled(Paper)(({ theme }) => ({
   ...theme.typography.body2,
@@ -150,31 +147,6 @@ export class HomePage extends Component {
     localStorage.setItem("traitID", selectedOptionTrait);
     var self = this;
     
-    // axios
-    //   .get(
-    //     "/api/v1/assaypositions/" +
-    //       clientId +
-    //       "&" +
-    //       selectedOptionTrait.value
-    //   )
-    //   .then((response) => {
-    //     console.log(response.data);
-    //     const data = response.data
-    //      self.setState({ data: data.data });
-
-    //     var markerss = response.data
-    //     markers = response.data.map(function (trait) {
-    //       return { value: trait.id, label: trait.prescription };
-    //     });
-       
-    //     localStorage.setItem("markers", markerss);
-        
-
-    //   })
-
-      
-    //   .catch((error) => {});
-      
   };
 
   
