@@ -4,28 +4,44 @@ import ReactDOM from "react-dom";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import axios from "axios";
 import Autocomplete from "@material-ui/lab/Autocomplete";
-import { TextField } from "@material-ui/core";
+import {
+  TextField,
+  Paper,
+  Card,
+  Grid,
+  Box,
+  ListItem,
+  CircularProgress,
+} from "@material-ui/core";
 import "./cross.css";
-import AnyChart from 'anychart-react';
+import AnyChart from "anychart-react";
 import ReactDOMServer from "react-dom/server";
 import $ from "jquery";
 import Select from "react-select";
 import anychart from "anychart";
+import swal from "sweetalert";
+import Swal from "sweetalert2";
+import ClipLoader from "react-spinners/ClipLoader";
+import Spinner from "react-bootstrap/Spinner";
+import BuildChart from "./BuildChart";
+import FileUpload from "./FileUpload";
 
+const options = [
+  { value: "column", label: "Column Chart" },
+  { value: "line", label: "Line Chart" },
+  { value: "scatter", label: "Scatter Plot" },
+  { value: "area", label: "Area Chart" },
+];
 
-
- const options = [
-   { value: "column", label: "Column Chart" },
-   { value: "line", label: "Line Chart" },
-   { value: "scatter", label: "Scatter Plot" },
-   { value: "area", label: "Area Chart" },
- ];
 //vars for various data
 
 var markers = [];
 var parents = [];
 let parentss = [];
 var allele_states1 = [];
+var combinedData;
+var switchedData2;
+
 var allele_states2 = [];
 var tHead = [];
 var newData = [];
@@ -36,14 +52,25 @@ var tableData2 = [];
 var dataVal1 = null;
 var dataVal2 = null;
 var checked = [];
-var charts = []
-var nones = []
-var crossTableForecast = []
+var charts = [];
+var nones = [];
+var crossTableForecast = [];
+var xpoData = [];
+var loading = false;
+var swtched = [];
+var pres = [];
+var markerChecks = [];
+var alleleTable1 = [];
+var alleleTable2 = [];
+var rightId;
 
-export default class Cross extends Component {
+// var getCast = false;
+
+export default class Cross extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      analys: false,
       checked1: null,
       checked2: null,
       markers: null,
@@ -51,119 +78,120 @@ export default class Cross extends Component {
       parent2: null,
       data1: [],
       data2: [],
+      traitsParent: [],
+      allele1: [],
+      allele2: [],
+      checkMarkers: [],
+      selectedOptionsP1: [],
+      selectedOptionsP2: [],
+      selected: false,
+      selectedP2: false,
+      showTablel: false,
+      forecastArray: [],
+      buildnewChart: [],
+      sendChartProps: false,
+      sendChartProps1: false,
     };
+    this.getForecast = this.getForecast.bind(this);
+    this.buildTable = this.buildTable.bind(this);
   }
 
   componentDidMount() {
+    var myProp = this.props.myprop;
+
+    console.log(this.props.location.lineData);
+    document.title = "ORION";
     markers.length = 0;
     parentss.length = 0;
     parents.length = 0;
-    var clientId = localStorage.getItem("clientId");
+    var clientId = localStorage.getItem("clientID");
     var traitId = localStorage.getItem("traits");
+    console.log(traitId);
     var newtttt = JSON.parse(traitId);
-    for (var i = 0; i < newtttt.length; i++) {
-      axios
-        .get("/api/v1/assaypositions/" + clientId + "&" + newtttt[i].value)
-        .then((response) => {
-          parentss.push(response.data);
-          console.log(parentss);
-        })
-        .catch((error) => {});
+    console.log(newtttt);
+    this.setState({ analys: true });
+    // getCast = true;
+
+    for (var i = 0; i < this.props.location.dddd.length; i++) {
+      parentss.push(this.props.location.dddd[i]);
+      // axios
+      //   .get("/api/v1/assaypositions/" + clientId + "&" + newtttt[i].value)
+      //   .then((response) => {
+      //     parentss.push(response.data);
+      console.log(parentss);
+      console.log(this.state.analys);
+
+      //   })
+      //   .catch((error) => {});
     }
   }
+  // componentDidUpdate(prevState, prevProps){
+  //   if(prevState ==  this.state.buildnewChart){
+  //     console.log(this.state.buildnewChart)
+  //   }
+
+  // }
 
   getMarkers() {
+    // console.log(ss);
     tHead.length = 0;
     parents.length = 0;
     var clientId = localStorage.getItem("clientID");
-    let result = parentss[0].map((a) => a.id);
-    console.log(result);
-    if (result.every((val, i, arr) => val === arr[0])) {
-      console.log("true");
-      axios
-        .get("/api/v1/haplotypeparent/" + clientId + "&" + result[0])
-        .then((response) => {
-          console.log(response.data);
-        })
-        .catch((error) => {});
-    }
-    for (var i = 0; i < parentss.length; i++) {
-      let newParent = parentss[i];
-      for (var j = 0; j < newParent.length; j++) {
-        axios
-          .get("/api/v1/haplotypeparent/" + clientId + "&" + newParent[j].id)
-          .then((response) => {
-            parents.push(...response.data);
-          })
-          .catch((error) => {});
+    if (parentss.length === 0) {
+      // swal("NO DATA YET");
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Something went wrong, check data",
+      });
+    } else {
+      let result = parentss[0].map((a) => a.id);
+      console.log(result);
+      // if (result.every((val, i, arr) => val === arr[0])) {
+      //   // console.log("true");
+      //   axios
+      //     .get("/api/v1/haplotypeparent/" + clientId + "&" + result[0])
+      //     .then((response) => {
+      //        console.log(response.data);
+      //       xpoData = response.data;
+      //     })
+      //     .catch((error) => {});
+      // }
+      for (var i = 0; i < parentss.length; i++) {
+        let newParent = parentss[i];
+        for (var j = 0; j < newParent.length; j++) {
+          axios
+            .get("/api/v1/haplotypeparent/" + clientId + "&" + newParent[j].id)
+            .then((response) => {
+              parents.push(...response.data);
+              console.log(response.data.length);
+            })
+            .catch((error) => {});
+        }
       }
     }
   }
-  // set Parent1
-  setValueP1 = (newValue) => {
-    checked.length = 0;
-    newData.length = 0;
-    allele_states1.length = 0;
-    var clientId = localStorage.getItem("clientID");
-    dataVal1 = newValue.name;
-    for (var i = 0; i < parentss.length; i++) {
-      console.log(parentss[i]);
-      console.log(dataVal1);
-      let prescription = parentss[i].find((x) => x.prescription);
-      newData.push(prescription.prescription);
-    }
-    for (var a = 0; a < newData.length; a++) {
-      axios
-        .get(
-          "/api/v1/haplotypeparent_trait/" +
-            clientId +
-            "&" +
-            newValue.name +
-            "&" +
-            newData[a]
-        )
-        .then((response) => {
-          allele_states1.push(response.data);
-          console.log(allele_states1);
-        })
-        .catch((error) => {});
-    }
-  };
 
-  //set Parent 2
-  setValueP2 = (newValue) => {
-    this.setState({ data1: allele_states1 });
-    newData.length = 0;
-    allele_states2.length = 0;
-    var clientId = localStorage.getItem("clientID");
-    dataVal2 = newValue.name;
-    for (var i = 0; i < parentss.length; i++) {
-      console.log(newValue.name);
-      let prescription = parentss[i].find((x) => x.prescription);
-      newData.push(prescription.prescription);
-    }
-    for (var a = 0; a < newData.length; a++) {
-      axios
-        .get(
-          "/api/v1/haplotypeparent_trait/" +
-            clientId +
-            "&" +
-            newValue.name +
-            "&" +
-            newData[a]
-        )
-        .then((response) => {
-          allele_states2.push(response.data);
-          console.log(allele_states2);
-        })
-        .catch((error) => {});
-    }
-  };
+  getUniqueListBy(arr, key) {
+    return [...new Map(arr.map((item) => [item[key], item])).values()];
+  }
+  swapElements(array, source, dest) {
+    return source === dest
+      ? array
+      : array.map((item, index) =>
+          index === source ? array[dest] : index === dest ? array[source] : item
+        );
+  }
 
   buildTable() {
-    console.log(dataVal2);
-    console.log(dataVal1);
+    // console.log(dataVal2);
+    // console.log(dataVal1);
+    combinedData = dataVal1 + dataVal2;
+    console.log(combinedData);
+    this.setState({ sendChartProps: true });
     newArray.length = 0;
+    alleleTable1.length = 0;
+    alleleTable2.length = 0;
     nones.length = 0;
     crossTableForecast.length = 0;
     var clientId = localStorage.getItem("clientID");
@@ -180,16 +208,16 @@ export default class Cross extends Component {
 
     var checkss;
     var news = [];
-
     //build parent tables
     // eslint-disable-next-line no-sequences
     for (
-      var a = 0, b = 0, j = 0;
-      a < allele_states1.length, b < allele_states2.length, j < hhh.length;
-      a++, b++, j++
+      var a = 0, b = 0, j = 0, des = 0;
+      a < allele_states1.length,
+        b < allele_states2.length,
+        j < hhh.length,
+        des < parentss.length;
+      a++, b++, j++, des++
     ) {
-      console.log(hhh[j].value);
-
       console.log(checkss);
       let table = document.createElement("table");
       table.setAttribute(
@@ -212,25 +240,25 @@ export default class Cross extends Component {
       var newTableData = [
         {
           marker: "Parent Name",
-          rank: "",
+          rank: rightId,
           allele: dataVal1,
           ideal: "Ideal Haplotype",
         },
         ...allele_states1[a],
         {
           marker: "Category",
-          rank: "",
+          rank: rightId,
           allele: allele_states1[a][1]["category"],
           ideal: "",
           category: "",
         },
       ];
       var newTableData1 = [
-        { marker: "Parent Name", rank: "", allele: dataVal2 },
+        { marker: "Parent Name", rank: rightId, allele: dataVal2 },
         ...allele_states2[b],
         {
           marker: "Category",
-          rank: "",
+          rank: rightId,
           allele: allele_states2[b][1]["category"],
           ideal: "",
           category: "",
@@ -239,10 +267,10 @@ export default class Cross extends Component {
 
       //  console.log(checked[m][1])
       console.log(newTableData);
-
-      console.log(newTableData);
-      console.log(allele_states1[a][1]["category"]);
       console.log(newTableData1);
+      alleleTable1.push(newTableData);
+      alleleTable2.push(newTableData1);
+      console.log(alleleTable1);
 
       const ids = newTableData.map((o) => o.marker);
       const filtered = newTableData.filter(
@@ -285,6 +313,15 @@ export default class Cross extends Component {
         tbody.appendChild(alleleRow2);
         table.appendChild(tbody);
       });
+      for (var i = 0; i < parentss.length; i++) {
+        if (parentss[i][0].marker === allele_states1[a][0].marker) {
+          rightId = parentss[i][0].prescription;
+          break;
+        } else {
+          rightId = hhh[j].value;
+        }
+      }
+      // console.log(this.state.analys)
 
       axios
         .get(
@@ -295,7 +332,7 @@ export default class Cross extends Component {
             "&" +
             dataVal2 +
             "&" +
-            hhh[j].value
+            rightId
         )
         // eslint-disable-next-line no-loop-func
         .then((response) => {
@@ -319,6 +356,7 @@ export default class Cross extends Component {
           });
 
           console.log(checkss);
+
           const getNones = checkss.filter(
             (character) => character.compare === "none"
           );
@@ -335,110 +373,10 @@ export default class Cross extends Component {
   }
 
   getForecast() {
-    var clientId = localStorage.getItem("clientId");
-    var hhh = JSON.parse(localStorage.getItem("priscribe") || "[]");
-    charts.length = 0;
-    // check for existing table
-    for (var forecast = 0; forecast < hhh.length; forecast++) {
-      var parentDiv = document.getElementById("datas");
-      var childDiv = document.getElementById(hhh[forecast].label);
-
-      if (parentDiv.contains(childDiv)) {
-        document.getElementById("datas").innerHTML = "";
-      } else {
-        document.getElementById("datas");
-      }
-      var pieDa = hhh[forecast].label;
-      let pies = document.createElement("div");
-      pies.setAttribute("id", hhh[forecast].label);
-      const option = [];
-      option.push(hhh[forecast].label);
-      pies.setAttribute("class", "col");
-      // getting data for charts
-      axios
-        .get(
-          "/api/v1/haplotype_forecast/" +
-            clientId +
-            "&" +
-            dataVal1 +
-            "&" +
-            dataVal2 +
-            "&" +
-            hhh[forecast].value
-        )
-        .then((response) => {
-          crossTableForecast.push(response.data);
-          console.log(crossTableForecast);
-          let obj = response.data.find((o) => o.forecast);
-          console.log(Object.values(obj).join());
-          var x = document.getElementById("datas").querySelectorAll(".col");
-          var arrWithForecast = response.data.map((object) => {
-            return {
-              x: Object.keys(object).join(),
-              value: Object.values(object).join(),
-            };
-          });
-
-          console.log(arrWithForecast);
-          var pieData = arrWithForecast.pop();
-
-          //build charts
-
-          let Hellos = () => {
-            var ddlFruits = document.getElementById("stats");
-            var selectedText =
-              ddlFruits.options[ddlFruits.selectedIndex].innerHTML;
-            var selectedValue = ddlFruits.value;
-            console.log(
-              "Selected Text: " + selectedText + " Value: " + selectedValue
-            );
-
-            return (
-              <>
-                <div>
-                  <p id="results" class="btn btn-outline-secondary">
-                    {"Forecast for" +
-                      " " +
-                      option +
-                      " " +
-                      "is " +
-                      " " +
-                      Object.values(obj).join()}
-                  </p>
-                </div>
-                <div className="piChart">
-                  <AnyChart
-                    width={300}
-                    height={300}
-                    type="pie3d"
-                    data={arrWithForecast}
-                  />
-
-                  <AnyChart
-                    width={450}
-                    height={300}
-                    type={selectedValue}
-                    data={arrWithForecast}
-                  />
-                </div>
-              </>
-            );
-          };
-
-          ReactDOMServer.renderToStaticMarkup(<Hellos />);
-          ReactDOM.render(<Hellos />, pies);
-          console.log(arrWithForecast);
-          charts.push(arrWithForecast);
-
-          console.log(charts);
-        })
-
-        .catch((error) => {});
-      document.getElementById("datas").appendChild(pies);
-      console.log(hhh[forecast].label);
-    }
+    // this.setState({ sendChartProps: false });
+    var el = document.getElementById("datas");
+    el.style.display = "grid";
     document.getElementById("crosses").style.display = "flex";
-    document.getElementById("stats").style.display = "flex";
   }
 
   CrossTable(e) {
@@ -466,10 +404,8 @@ export default class Cross extends Component {
       "Number of Seedlings",
       "Cost $",
       "Prescription",
+      "Forecast",
     ];
-    hhh.forEach((data) => {
-      header.push(data.label);
-    });
 
     //build for forecast
     var forecastPercent = [];
@@ -595,198 +531,342 @@ export default class Cross extends Component {
     downloadCSV(csv.join("\n"), "Cross Data");
   }
 
+  getAlleteStatesP1(data) {
+    allele_states1.length = 0;
+    newData.length = 0;
+    var clientId = localStorage.getItem("clientID");
+
+    for (var i = 0; i < parentss.length; i++) {
+      // console.log(parentss[i]);
+      // console.log(dataVal1);
+      let prescription = parentss[i].find((x) => x.prescription);
+      newData.push(prescription.prescription);
+    }
+    for (var a = 0; a < newData.length; a++) {
+      axios
+        .get(
+          "/api/v1/haplotypeparent_trait/" +
+            clientId +
+            "&" +
+            data +
+            "&" +
+            newData[a]
+        )
+        .then((response) => {
+          // swtched.push(JSON.(response.data))
+          var filteredData = this.getUniqueListBy(response.data, "marker");
+          allele_states1.push(filteredData);
+          console.log(allele_states1);
+
+          this.setState({ selected: false });
+        })
+        .catch((error) => {});
+    }
+  }
+
+  getAlleteStatesP2(data) {
+    allele_states2.length = 0;
+    newData.length = 0;
+    var clientId = localStorage.getItem("clientID");
+
+    for (var i = 0; i < parentss.length; i++) {
+      // console.log(parentss[i]);
+      // console.log(dataVal1);
+      let prescription = parentss[i].find((x) => x.prescription);
+      newData.push(prescription.prescription);
+    }
+    for (var a = 0; a < newData.length; a++) {
+      axios
+        .get(
+          "/api/v1/haplotypeparent_trait/" +
+            clientId +
+            "&" +
+            data +
+            "&" +
+            newData[a]
+        )
+        .then((response) => {
+          // swtched.push(JSON.(response.data))
+          var filteredData = this.getUniqueListBy(response.data, "marker");
+          allele_states2.push(filteredData);
+          console.log(allele_states2);
+          // console.log(swtched);
+          this.setState({ selectedP2: false });
+        })
+        .catch((error) => {});
+    }
+  }
+
+  handleChangeP1 = (selectedOptionsP1) => {
+    allele_states1.length = 0;
+    this.setState({ selectedOptionsP1 });
+    this.setState({ selected: true });
+  };
+  handleChangeP2 = (selectedOptionsP2) => {
+    this.setState({ selectedOptionsP2 });
+    this.setState({ selectedP2: true });
+  };
 
   render() {
-    const { selectedOptionCharts } = this.state;
+    const shelfArr = this.props.location.state.map((option) => {
+      return {
+        label: option.name,
+        value: option.id,
+      };
+    });
+    // console.log(shelfArr);
+    const { selectedOptionsP1 } = this.state.selectedOptionsP1;
+    const { selectedOptionsP2 } = this.state.selectedOptionsP2;
+
+    if (this.state.selected) {
+      dataVal1 = this.state.selectedOptionsP1.label;
+      this.getAlleteStatesP1(this.state.selectedOptionsP1.label);
+    } else if (this.state.selectedP2) {
+      dataVal2 = this.state.selectedOptionsP2.label;
+      this.getAlleteStatesP2(this.state.selectedOptionsP2.label);
+    }
     return (
       <>
-        <div>
-          <form className="parentInput">
-            <div class="d-flex justify-content-center">
-              <div class="col-10" style={{ paddingRight: "1em" }}>
-                <Autocomplete
-                  onChange={(event, newValue) => {
-                    if (newValue === null) {
-                      var fake = {
-                        id: "",
-                        name: "",
-                        sex: "none",
-                        allele_state: "",
-                        year: "2022",
-                      };
-
-                      this.setValueP1(fake);
-                    } else {
-                      this.setValueP1(newValue);
-                    }
-                  }}
-                  limitTags={2}
-                  id="multiple-limit-tags"
-                  options={parents}
-                  getOptionLabel={(option) => option.name}
-                  getOptionSelected={(option, value) =>
-                    option.name === value.name
-                  }
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      // label="limitTags"
-                      placeholder="Parent1"
-                      class="form-control"
-                      onClick={this.getMarkers}
-                    />
-                  )}
-                />
-              </div>
-              <div class="col-10" style={{ paddingRight: "1em" }}>
-                <Autocomplete
-                  onChange={(event, newValue) => {
-                    if (newValue === null) {
-                      var fake = {
-                        id: "",
-                        name: "",
-                        sex: "none",
-                        allele_state: "",
-                        year: "2022",
-                      };
-                      this.setValueP2(fake);
-                    } else {
-                      this.setValueP2(newValue);
-                    }
-                  }}
-                  limitTags={2}
-                  id="multiple-limit-tags"
-                  options={parents}
-                  defaultValue={parents[0]}
-                  getOptionLabel={(option) => option.name}
-                  getOptionSelected={(option, value) =>
-                    option.name === value.name
-                  }
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      // label="limitTags"
-                      placeholder="Parent2"
-                      class="form-control"
-                      onClick={this.getMarkers}
-                    />
-                  )}
-                />
-              </div>
-              <button
-                type="button"
-                class="btn btn-secondary"
-                onClick={this.buildTable}
+        {this.props.location.lineData.length > 0 ? (
+          <FileUpload
+            fileLines={this.props.location.lineData}
+            clientID={localStorage.getItem("clientID")}
+            traits={JSON.parse(localStorage.getItem("priscribe"))}
+          ></FileUpload>
+        ) : (
+          <>
+            <Box display="flex" alignItems="center" justifyContent="center">
+              <Paper
+                elevation={12}
+                style={{
+                  width: "60%",
+                  height: "95px",
+                  marginTop: "1em",
+                  alignItems: "end",
+                }}
               >
-                Submit
-              </button>
-            </div>
-          </form>
-          <div>{this.buildTable}</div>
-        </div>
-        <div class="container-fluid" id="showData"></div>
+                <Grid
+                  container
+                  spacing={3}
+                  align="center"
+                  justify="center"
+                  alignItems="center"
+                  style={{ paddingTop: "2em" }}
+                >
+                  <Grid item xs={3}>
+                    <Select
+                      className="basic-single"
+                      placeholder="Parent 1"
+                      options={shelfArr}
+                      isSearchable={true}
+                      onChange={this.handleChangeP1}
+                      value={selectedOptionsP1}
+                    />
+                  </Grid>
+                  <Grid item xs={3}>
+                    <Select
+                      className="basic-single"
+                      placeholder="Parent 2"
+                      options={shelfArr}
+                      isSearchable={true}
+                      onChange={this.handleChangeP2}
+                      value={selectedOptionsP2}
+                    />
+                  </Grid>
+                  <Grid item xs={2}>
+                    <button
+                      type="button"
+                      class="btn btn-secondary"
+                      onClick={this.buildTable}
+                    >
+                      Cross
+                    </button>
+                  </Grid>
+                </Grid>
+              </Paper>{" "}
+            </Box>
 
-        <div
-          style={{
-            paddingTop: "1em",
-            display: "none",
-            marginRight: "1em",
-            marginLeft: "1em",
-          }}
-          id="forecastBtn"
-        >
-          <button
-            type="button"
-            class="btn btn-outline-secondary"
-            onClick={this.getForecast}
-          >
-            Get Forecast
-          </button>
-          <select
-            style={{
-              paddingTop: ".6em",
-              display: "none",
-              marginRight: "1em",
-              marginLeft: "1em",
-            }}
-            ng-model="discussionsSelect"
-            class="btn btn-outline-secondary dropdown-toggle"
-            placeholder="View in different Chart"
-            id="stats"
-            onChange={this.buildTable}
-          >
-            <option value="column" selected>
-              View in different Chart
-            </option>
-            <option value="column">Column Chart</option>
-            <option value="line">Line Chart</option>
-            <option value="area">Area Chart</option>
-          </select>
-        </div>
-        <div class="container-fluid" id="showChart"></div>
-        <div class="row" id="datas"></div>
+            <Paper
+              elevation={2}
+              style={{
+                marginTop: "2em",
+                marginLeft: "1em",
+                marginRight: "1em",
+              }}
+            >
+              <Grid
+                container
+                spacing={3}
+                align="center"
+                justify="center"
+                alignItems="center"
+                style={{ paddingTop: "2em" }}
+              >
+                <Grid id="showData" item xs={11}></Grid>
+              </Grid>
+            </Paper>
 
-        <div style={{ display: "none" }} class="input-group mb-3" id="crosses">
-          <div
-            class="input-group mb-3"
-            style={{ width: "20%", paddingTop: "4em", marginLeft: ".7em" }}
-          >
-            <input
-              type="text"
-              id="crossID"
-              class="form-control"
-              aria-label="Default"
-              aria-describedby="inputGroup-sizing-default"
-              placeholder="Assign Cross ID"
-            ></input>
-          </div>
-          <div
-            class="input-group mb-3"
-            style={{ width: "20%", paddingTop: "4em", marginLeft: ".7em" }}
-          >
-            <input
-              type="number"
-              id="numSeed"
-              class="form-control"
-              aria-label="Default"
-              aria-describedby="inputGroup-sizing-default"
-              placeholder="Num of Seedlings"
-            ></input>
             <div
-              class="col-auto "
-              style={{ paddingLeft: "2em", height: ".9px" }}
+              style={{
+                paddingTop: "2em",
+                display: "none",
+                marginRight: "1em",
+                marginLeft: "1em",
+              }}
+              id="forecastBtn"
             >
               <button
-                onClick={this.CrossTable}
+                type="button"
+                class="btn btn-outline-secondary"
+                onClick={this.getForecast}
+              >
+                Get Forecast
+              </button>
+              <select
+                style={{
+                  paddingTop: ".6em",
+                  display: "none",
+                  marginRight: "1em",
+                  marginLeft: "1em",
+                }}
+                ng-model="discussionsSelect"
+                class="btn btn-outline-secondary dropdown-toggle"
+                placeholder="View in different Chart"
+                id="stats"
+                onChange={this.buildTable}
+              >
+                <option value="column" selected>
+                  View in different Chart
+                </option>
+                <option value="column">Column Chart</option>
+                <option value="line">Line Chart</option>
+                <option value="area">Area Chart</option>
+              </select>
+            </div>
+
+            <Paper
+              elevation={2}
+              style={{
+                marginTop: "2em",
+                marginLeft: "1em",
+                marginRight: "1em",
+              }}
+            >
+              <Grid
+                container
+                spacing={6}
+                align="center"
+                justify="center"
+                alignItems="center"
+              >
+                <Grid id="datas" item xs={12} style={{ display: "none" }}>
+                  <div>
+                    {this.state.sendChartProps ? (
+                      <BuildChart
+                        press={pres}
+                        data1={dataVal1}
+                        data2={dataVal2}
+                        traits={JSON.parse(
+                          localStorage.getItem("priscribe") || "[]"
+                        )}
+                        clientID={localStorage.getItem("clientID")}
+                        sendChartProps={this.state.sendChartProps}
+                        sendChartProps1={this.state.sendChartProps1}
+                        checker={combinedData}
+                      />
+                    ) : (
+                      <CircularProgress color="secondary" />
+                    )}
+                  </div>
+                </Grid>
+              </Grid>
+            </Paper>
+
+          
+            <Grid
+              id="mainContainer"
+              container
+              rowSpacing={1}
+              columnSpacing={{ xs: 1, sm: 2, md: 2 }}
+            >
+              <Grid item xs={12}>
+                <div
+                  style={{ display: "none" }}
+                  class="input-group mb-3"
+                  id="crosses"
+                >
+                  <div
+                    class="input-group mb-3"
+                    style={{
+                      width: "13%",
+                      paddingTop: "4em",
+                      marginLeft: ".7em",
+                    }}
+                  >
+                    <input
+                      type="text"
+                      id="crossID"
+                      class="form-control"
+                      aria-label="Default"
+                      aria-describedby="inputGroup-sizing-default"
+                      placeholder="Assign Cross ID"
+                    ></input>
+                  </div>
+                  <div
+                    class="input-group mb-3"
+                    style={{
+                      width: "22%",
+                      paddingTop: "4em",
+                      marginLeft: ".7em",
+                    }}
+                  >
+                    <input
+                      type="number"
+                      id="numSeed"
+                      class="form-control"
+                      aria-label="Default"
+                      aria-describedby="inputGroup-sizing-default"
+                      placeholder="Num of Seedlings"
+                    ></input>
+                    <div
+                      class="col-auto "
+                      style={{ paddingLeft: "2em", height: ".9px" }}
+                    >
+                      <button
+                        onClick={this.CrossTable}
+                        type="submit"
+                        class="btn btn-secondary mb-2"
+                        id="addcsv"
+                        value="submit"
+                      >
+                        Add to Cross List
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </Grid>
+            </Grid>
+
+            <div class="container-fluid">
+              <table
+                class="table table-hover table-bordered table-sm table-responsive card-1 p-4"
+                id="crossTable"
+              ></table>
+            </div>
+
+            <section id="csv" style={{ display: "none" }}>
+              <button
+                onClick={this.exportToCsv}
                 type="submit"
                 class="btn btn-secondary mb-2"
                 id="addcsv"
                 value="submit"
               >
-                Submit
+                Export
               </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="container-fluid">
-          <table
-            class="table table-hover table-bordered table-sm table-responsive card-1 p-4"
-            id="crossTable"
-          ></table>
-        </div>
-
-        <section id="csv" style={{ display: "none" }}>
-          <button
-            onClick={this.exportToCsv}
-            type="submit"
-            class="btn btn-secondary mb-2"
-            id="addcsv"
-            value="submit"
-          >
-            Export
-          </button>
-        </section>
+            </section>
+          </>
+        )}
       </>
     );
   }

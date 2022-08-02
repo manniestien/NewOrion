@@ -10,6 +10,9 @@ import PropTypes from "prop-types";
 import { getUsers } from "./LoginActions";
 import { getClientTraits } from "./LoginActions";
 import { connect } from "react-redux";
+import orion from "../src/asserts/favicon 3.ico";
+import Cross from "./cross";
+import Papa from "papaparse";
 
 const Item = styled(Paper)(({ theme }) => ({
   ...theme.typography.body2,
@@ -20,15 +23,15 @@ const Item = styled(Paper)(({ theme }) => ({
   width: "50%",
 }));
 
+axios.defaults.baseURL = "http://192.168.128.184:8002/";
+var traits = [];
+var crops = [];
+var markers = [];
+var traitsData = [];
+var parentData = [];
 
-
-axios.defaults.baseURL = "http://192.168.128.237:8002/";
-var traits = []
-var crops = []
-var markers = []
-
-var clientsss = []
-export class HomePage extends Component {
+var clientsss = [];
+export class HomePage extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -40,20 +43,32 @@ export class HomePage extends Component {
       selectValue: null,
       data: [],
       clients: [],
+      parentLines: ["dfdfdi"],
+      sendData: false,
+      linesFromFile: []
     };
     this.handleChange = this.handleChange.bind(this);
     this.routeChange = this.routeChange.bind(this);
     // this.handleChangeTrait = this.handleChangeTrait.bind(this)
   }
+
+  getFaviconEl() {
+    return document.getElementById("favicon");
+  }
+
+  handleFavicon() {
+    const favicon = this.getFaviconEl(); // Accessing favicon element
+    favicon.href = orion;
+  }
   componentDidMount() {
+    this.handleFavicon();
+    document.title = "ORION";
     this.props.getUsers();
-    
-    
   }
   componentWillUpdate() {
     this.props.getClientTraits();
     const clientsID = this.props.clientsID;
-    
+
     // console.log(clientsID)
   }
 
@@ -61,50 +76,107 @@ export class HomePage extends Component {
     this.props.history.push("/cross");
   }
   onChangeHandler = (event) => {
-    this.setState({
-      selectedFile: event.target.files[0],
-      loaded: 0,
-    });
-    console.log(event.target.files[0]);
-  };
-  onClickHandler = () => {
-// axios
-//   .get("/api/v1/assaypositions/" + this.state.selectedOptionSub.value + "&" + this.stateselectedOptionTrait.value)
-//   .then((response) => {
-//     console.log(response.data);
-//     var markerss = response.data;
-//     markers = response.data.map(function (trait) {
-//       return { value: trait.id, label: trait.prescription };
-//     });
-//     localStorage.setItem("markers", markers);
-//     this.setState({ data: response.data });
-//   })
+   var lines = []
+   
+      // Passing file data (event.target.files[0]) to parse using Papa.parse
+      Papa.parse(event.target.files[0], {
+        header: true,
+        skipEmptyLines: true,
+        complete: function (results) {
+          console.log(results.data)
+          lines.push(results.data)
+        },
+        
+      });
+      this.setState({linesFromFile: lines})
 
-//   .catch((error) => {});
- console.log(localStorage.getItem("markers"));
+  };
+
+  onClickHandler = () => {
+    console.log(this.state.linesFromFile)
+    traitsData.length = 0;
+    console.log(localStorage.getItem("markers"));
     console.log(this.state.selectedOptionTrait);
-     localStorage.setItem(
-       "priscribe",
-       JSON.stringify(this.state.selectedOptionTrait)
-     );
+    localStorage.setItem(
+      "priscribe",
+      JSON.stringify(this.state.selectedOptionTrait)
+    );
     const searchParams = new URLSearchParams();
     searchParams.append("prog", this.state.selectedOptionSub.label);
     searchParams.append("crop", this.state.selectedOptionCrop.label);
     searchParams.append("traits", this.state.selectedOptionTrait.label);
     console.log(searchParams.toString());
-    this.props.history.push("/cross/?" + searchParams.toString());
-    console.log(this.state.data)
+    console.log(this.state.data);
     markers = this.state.selectedOptionTrait;
-    localStorage.setItem('traits', JSON.stringify(this.state.selectedOptionTrait))
-   // const data = new FormData();
-   // data.append("file", this.state.selectedFile);
+    localStorage.setItem(
+      "traits",
+      JSON.stringify(this.state.selectedOptionTrait)
+    );
+    // const data = new FormData();
+    // data.append("file", this.state.selectedFile);
+    console.log(this.state.selectedOptionTrait);
+    for (var i = 0; i < this.state.selectedOptionTrait.length; i++) {
+      axios
+        .get(
+          "/api/v1/assaypositions/" +
+            localStorage.getItem("clientID") +
+            "&" +
+            this.state.selectedOptionTrait[i].value
+        )
+        // eslint-disable-next-line no-loop-func
+        .then((response) => {
+          // parentss.push(response.data);
+          traitsData.push(response.data);
+         // console.log(traitsData);
+          this.getMarkers(traitsData);
+          setTimeout()
+          // this.props.history.push("/cross/?" + searchParams.toString(), state:{parentData: parentData});
+          
+          
+          
+        })
+        .catch((error) => {});
+
+        
+    }
     
-  };;
+  };
+
+  getMarkers(data) {
+    parentData.length= 0
+    for (var i = 0; i < data.length; i++) {
+      let newParent = data[i];
+      for (var j = 0; j < newParent.length; j++) {
+        axios
+          .get(
+            "/api/v1/haplotypeparent/" +
+              localStorage.getItem("clientID") +
+              "&" +
+              newParent[j].id
+          )
+          .then((response) => {
+            parentData.push(...response.data);
+           // console.log(response.data);
+           //console.log(parentData);
+            this.setState({sendData: true})
+
+           
+          })
+          
+          .catch((error) => {});
+          
+      }
+            this.setState({ parentLines: parentData });
+
+    }
+
+    
+  }
 
   handleChange = (selectedOptionSub) => {
     this.setState({ selectedOptionSub });
     console.log(`Option selected:`, selectedOptionSub.value);
-    localStorage.setItem('clientID', selectedOptionSub.value)
+    localStorage.setItem("clientID", selectedOptionSub.value);
     axios
       .get("/api/v1/crops/" + selectedOptionSub.value)
       .then((response) => {
@@ -119,20 +191,17 @@ export class HomePage extends Component {
   handleChangeCrop = (selectedOptionCrop) => {
     this.setState({ selectedOptionCrop });
     console.log(`Option selected:`, selectedOptionCrop.value);
-    var clientId = localStorage.getItem('clientID')
+    var clientId = localStorage.getItem("clientID");
     var cropId = localStorage.getItem("cropID");
 
-
     axios
-      .get(
-        "/api/v1/prescriptions/" +
-          clientId +
-          "&" +
-          selectedOptionCrop.value
-      )
+      .get("/api/v1/prescriptions/" + clientId + "&" + selectedOptionCrop.value)
       .then((response) => {
         console.log(response.data);
-       
+        console.log(
+          "/api/v1/prescriptions/" + clientId + "&" + selectedOptionCrop.value
+        );
+
         traits = response.data.map(function (trait) {
           return { value: trait.id, label: trait.prescription };
         });
@@ -142,16 +211,11 @@ export class HomePage extends Component {
 
   handleTraits = (selectedOptionTrait) => {
     this.setState({ selectedOptionTrait });
-    console.log(`Option selected:`, selectedOptionTrait.value);
+    console.log(`Option selected:`, selectedOptionTrait);
     var clientId = localStorage.getItem("clientID");
     localStorage.setItem("traitID", selectedOptionTrait);
     var self = this;
-    
   };
-
-  
-
-  
 
   render() {
     //this.getClii()
@@ -214,6 +278,20 @@ export class HomePage extends Component {
             Get Started
           </Button>
         </div>
+        <div>
+          {this.state.sendData ? (
+
+          this.props.history.push({
+            pathname: "/cross",
+            // search: searchParams.toString(),
+            state: this.state.parentLines,
+            dddd: traitsData,
+            lineData: this.state.linesFromFile
+          })
+          
+          
+          ) : null}
+        </div>
       </div>
     );
   }
@@ -222,8 +300,15 @@ export class HomePage extends Component {
 HomePage.propTypes = {
   clients: PropTypes.object,
   clientTraits: PropTypes.object,
+  parentData: PropTypes.any,
 };
 
-const mapStateToProps = (state) => ({ clients: state.clients, clientsID: state.clientTraits });
+const mapStateToProps = (state) => ({
+  clients: state.clients,
+  clientsID: state.clientTraits,
+  parentData: state.parentLines,
+});
 
-export default connect(mapStateToProps, {getUsers, getClientTraits})(HomePage)
+export default connect(mapStateToProps, { getUsers, getClientTraits })(
+  HomePage
+);

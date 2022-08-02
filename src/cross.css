@@ -16,3 +16,7 @@
 .anychart-credits-text, .anychart-credits-logo{
   display: none;
 }
+
+/* td, th {
+  text-align: center;
+} */

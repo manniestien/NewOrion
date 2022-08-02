@@ -14,7 +14,7 @@ import { setAxiosAuthToken, toastOnError } from "./Utils";
 import { propTypes } from "react-bootstrap/esm/Image";
 import HomePage from "./HomePage";
 
-axios.defaults.baseURL = "http://192.168.128.237:8002/";
+axios.defaults.baseURL = "http://192.168.128.184:8002/";
 
 export const login = (userData, redirectTo) => (dispatch) => {
   console.log(userData);

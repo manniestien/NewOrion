@@ -27,8 +27,8 @@ class Login extends Component {
     };
     localStorage.setItem('username', this.state.username)
     localStorage.setItem("password", this.state.password);
-    this.props.login(userData, '/Orion'); // <--- login request
-     this.props.history.push("/Orion")
+    this.props.login(userData, "/Select-Tool"); // <--- login request
+     this.props.history.push("/Select-Tool");
   };
   render() {
     return (
