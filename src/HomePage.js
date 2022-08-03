@@ -58,7 +58,7 @@ export class HomePage extends React.Component {
 
   handleFavicon() {
     const favicon = this.getFaviconEl(); // Accessing favicon element
-    favicon.href = orion;
+    // favicon.href = orion;
   }
   componentDidMount() {
     this.handleFavicon();
