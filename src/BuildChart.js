@@ -6,6 +6,9 @@ import { Grid, ListItem } from "@material-ui/core";
 var chartData = [];
 var traitName;
 var forecast;
+var chart = [];
+var crossTableForecast = []
+
 
 const options = {
   // title: 'Forecasr for' + ' ' + traitName + ' ' + 'is ' + ' ' + forecast,
@@ -27,10 +30,15 @@ export default class BuildChart extends Component {
   componentDidMount() {
     task.length = 0;
     this.fetchPokemons();
+    chart.length = 0
   }
 
   async fetchPokemons() {
     const promises = [];
+    chart.length = 0;
+    crossTableForecast.length = 0;
+
+
 
     // console.time("Nice way");
 
@@ -47,6 +55,7 @@ export default class BuildChart extends Component {
       );
       promises.push(result, this.props.traits[element].label);
       console.log(await (await result).data, this.props.traits[element].label);
+      crossTableForecast.push(await (await result).data);
       this.buildChart(
         await (
           await result
@@ -54,7 +63,9 @@ export default class BuildChart extends Component {
         this.props.traits[element].label
       );
     }
-  }
+    localStorage.setItem('crossForecast', JSON.stringify(crossTableForecast))
+    console.log(crossTableForecast)
+  }cr
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.checker !== this.props.checker) {
@@ -70,6 +81,15 @@ export default class BuildChart extends Component {
       forecast = object.forecast;
       return [Object.keys(object).join(), parseInt(Object.values(object))];
     });
+      var arrWithForecast1 = data.map((object) => {
+        return {
+          x: Object.keys(object).join(),
+          value: Object.values(object).join(),
+        };
+      });
+      var pop = arrWithForecast1.pop()
+       chart.push(arrWithForecast1);
+
     arrWithForecast.pop();
     arrWithForecast.unshift(["Task", "News"]);
     console.log(arrWithForecast);
@@ -81,7 +101,9 @@ export default class BuildChart extends Component {
     });
     chartData = arrWithForecast;
     this.setState({ showChart: false });
-    console.log(task);
+    console.log(chart);
+    localStorage.setItem("charts", JSON.stringify(chart));
+
   }
 
   render() {
@@ -136,7 +158,7 @@ export default class BuildChart extends Component {
         </>
       ));
 
-      console.log(chartData.length);
+      console.log(chartData);
     }
 
     return (

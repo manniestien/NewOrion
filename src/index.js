@@ -1,5 +1,5 @@
-//import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
+// import 'bootstrap/dist/css/bootstrap.css';
+// import "bootstrap-icons/font/bootstrap-icons.css";
 import React, { useReducer } from "react";
 import ReactDOM from "react-dom";
 import "./index.css";

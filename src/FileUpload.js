@@ -14,6 +14,7 @@ import { FiDelete } from "react-icons/fi";
 import { RiDeleteBin6Line } from "react-icons/ri";
 
 import { element } from "prop-types";
+import swal from "sweetalert";
 
 var prescriptionData = [];
 var finalPrescription = [];
@@ -195,7 +196,18 @@ export default class FileUpload extends React.Component {
         console.log(rowList);
         getRow.push(rowList);
       } catch {
-        throw Error("Promise failed");
+         swal({
+           title: "Error",
+           text: "Make sure you have the correct Data",
+           icon: "error",
+           button: "Ok",
+         }).then((okay) => {
+           if (okay) {
+             window.location = "/Orion";
+           } else {
+             window.location = "/Orion";
+           }
+         });
       }
     }
     if (getRow.length === dataLength * this.props.traits.length) {
