@@ -25,6 +25,7 @@ import ClipLoader from "react-spinners/ClipLoader";
 import Spinner from "react-bootstrap/Spinner";
 import BuildChart from "./BuildChart";
 import FileUpload from "./FileUpload";
+import { Button } from "@mui/material";
 
 const options = [
   { value: "column", label: "Column Chart" },
@@ -184,192 +185,209 @@ export default class Cross extends React.Component {
   }
 
   buildTable() {
+    try {
+      combinedData = dataVal1 + dataVal2;
+      console.log(combinedData);
+      this.setState({ sendChartProps: true });
+      newArray.length = 0;
+      alleleTable1.length = 0;
+      alleleTable2.length = 0;
+      nones.length = 0;
+      crossTableForecast.length = 0;
+      var clientId = localStorage.getItem("clientID");
+      var hhh = JSON.parse(localStorage.getItem("priscribe") || "[]");
+
+      // const header = Object.keys(allele_states1[0]);
+      var parentDiv = document.getElementById("showData");
+      var childDiv = document.getElementById("tab");
+      if (parentDiv.contains(childDiv)) {
+        document.getElementById("showData").innerHTML = "";
+      } else {
+        document.getElementById("showData");
+      }
+
+      var checkss;
+      var news = [];
+      //build parent tables
+      // eslint-disable-next-line no-sequences
+      for (
+        var a = 0, b = 0, j = 0, des = 0;
+        a < allele_states1.length,
+          b < allele_states2.length,
+          j < hhh.length,
+          des < parentss.length;
+        a++, b++, j++, des++
+      ) {
+        console.log(checkss);
+        let table = document.createElement("table");
+        table.setAttribute(
+          "class",
+          "table table-hover table-bordered table-sm table-responsive card-1 p-4"
+        );
+        table.setAttribute("id", "tab");
+
+        let thead = document.createElement("thead");
+        thead.setAttribute("class", "thead-dark");
+        let tbody = document.createElement("tbody");
+        let row = document.createElement("tr");
+        let idealHaplo = document.createElement("tr");
+        let alleleRow1 = document.createElement("tr");
+        alleleRow1.setAttribute("id", "category");
+        let alleleRow2 = document.createElement("tr");
+        alleleRow2.setAttribute("id", "category2");
+        let checks = document.createElement("tr");
+
+        var newTableData = [
+          {
+            marker: "Parent Name",
+            rank: rightId,
+            allele: dataVal1,
+            ideal: "Ideal Haplotype",
+          },
+          ...allele_states1[a],
+          {
+            marker: "Category",
+            rank: rightId,
+            allele: allele_states1[a][1]["category"],
+            ideal: "",
+            category: "",
+          },
+        ];
+        var newTableData1 = [
+          { marker: "Parent Name", rank: rightId, allele: dataVal2 },
+          ...allele_states2[b],
+          {
+            marker: "Category",
+            rank: rightId,
+            allele: allele_states2[b][1]["category"],
+            ideal: "",
+            category: "",
+          },
+        ];
+
+        //  console.log(checked[m][1])
+        console.log(newTableData);
+        console.log(newTableData1);
+        alleleTable1.push(newTableData);
+        alleleTable2.push(newTableData1);
+        console.log(alleleTable1);
+
+        const ids = newTableData.map((o) => o.marker);
+        const filtered = newTableData.filter(
+          ({ marker }, index) => !ids.includes(marker, index + 1)
+        );
+        const ids2 = newTableData1.map((o) => o.marker);
+        const filtered2 = newTableData1.filter(
+          ({ marker }, index) => !ids2.includes(marker, index + 1)
+        );
+
+        console.log(filtered2);
+
+        // eslint-disable-next-line no-loop-func
+        filtered.forEach(function (marker) {
+          let header = document.createElement("th");
+          header.setAttribute("class", "ml-2");
+          let alleleHeader = document.createElement("td");
+          let allelehaplo = document.createElement("td");
+          allelehaplo.setAttribute("id", "ideal");
+
+          header.innerHTML = marker.marker;
+          alleleHeader.innerHTML = marker.allele;
+          allelehaplo.innerHTML = marker.ideal;
+          row.appendChild(header);
+          alleleRow1.appendChild(alleleHeader);
+          idealHaplo.appendChild(allelehaplo);
+          table.appendChild(thead);
+          table.appendChild(tbody);
+          thead.appendChild(row);
+          tbody.appendChild(idealHaplo);
+          tbody.appendChild(alleleRow1);
+          // console.log(news);
+        });
+
+        // eslint-disable-next-line no-loop-func
+        filtered2.forEach(function (allele) {
+          let alleleHeader2 = document.createElement("td");
+          alleleHeader2.innerHTML = allele.allele;
+          alleleRow2.appendChild(alleleHeader2);
+          tbody.appendChild(alleleRow2);
+          table.appendChild(tbody);
+        });
+        for (var i = 0; i < parentss.length; i++) {
+          if (parentss[i][0].marker === allele_states1[a][0].marker) {
+            rightId = parentss[i][0].prescription;
+            break;
+          } else {
+            rightId = hhh[j].value;
+          }
+        }
+        // console.log(this.state.analys)
+
+        axios
+          .get(
+            "/api/v1/haplotype_two_parents/" +
+              clientId +
+              "&" +
+              dataVal1 +
+              "&" +
+              dataVal2 +
+              "&" +
+              rightId
+          )
+          // eslint-disable-next-line no-loop-func
+          .then((response) => {
+            console.log({ marker: "", compare: "" }, ...response.data);
+            checkss = [{ marker: "", compare: "" }, ...response.data];
+            checkss.forEach(function (check) {
+              let checkRow = document.createElement("td");
+
+              if (check.compare === "none") {
+                checkRow.innerHTML = "";
+              } else if (check.compare === "wrong") {
+                checkRow.innerHTML = '<i class="bi bi-x-circle icon-red"></i>';
+              } else if (check.compare === "right") {
+                checkRow.innerHTML =
+                  '<i class="bi bi-check-lg icon-green"></i>';
+              }
+              // checkRow.innerHTML = check.compare;
+              console.log(check.compare);
+              checks.appendChild(checkRow);
+              tbody.appendChild(checks);
+              table.appendChild(tbody);
+            });
+
+            console.log(checkss);
+
+            const getNones = checkss.filter(
+              (character) => character.compare === "none"
+            );
+            nones.push(...getNones);
+
+            console.log(nones);
+          })
+
+          .catch((error) => {});
+
+        document.getElementById("showData").appendChild(table);
+        document.getElementById("forecastBtn").style.display = "flex";
+        document.getElementById("datas").style.display = "none";
+      }
+    } catch {
+      swal({
+        title: "Error",
+        text: "Make sure both parent fields have values",
+        icon: "error",
+        button: "Ok",
+      }).then((okay) => {
+        if (okay) {
+          this.props.history.push("/Orion");
+        } else {
+          this.props.history.push("/Orion");
+        }
+      });
+    }
     // console.log(dataVal2);
     // console.log(dataVal1);
-    combinedData = dataVal1 + dataVal2;
-    console.log(combinedData);
-    this.setState({ sendChartProps: true });
-    newArray.length = 0;
-    alleleTable1.length = 0;
-    alleleTable2.length = 0;
-    nones.length = 0;
-    crossTableForecast.length = 0;
-    var clientId = localStorage.getItem("clientID");
-    var hhh = JSON.parse(localStorage.getItem("priscribe") || "[]");
-
-    // const header = Object.keys(allele_states1[0]);
-    var parentDiv = document.getElementById("showData");
-    var childDiv = document.getElementById("tab");
-    if (parentDiv.contains(childDiv)) {
-      document.getElementById("showData").innerHTML = "";
-    } else {
-      document.getElementById("showData");
-    }
-
-    var checkss;
-    var news = [];
-    //build parent tables
-    // eslint-disable-next-line no-sequences
-    for (
-      var a = 0, b = 0, j = 0, des = 0;
-      a < allele_states1.length,
-        b < allele_states2.length,
-        j < hhh.length,
-        des < parentss.length;
-      a++, b++, j++, des++
-    ) {
-      console.log(checkss);
-      let table = document.createElement("table");
-      table.setAttribute(
-        "class",
-        "table table-hover table-bordered table-sm table-responsive card-1 p-4"
-      );
-      table.setAttribute("id", "tab");
-
-      let thead = document.createElement("thead");
-      thead.setAttribute("class", "thead-dark");
-      let tbody = document.createElement("tbody");
-      let row = document.createElement("tr");
-      let idealHaplo = document.createElement("tr");
-      let alleleRow1 = document.createElement("tr");
-      alleleRow1.setAttribute("id", "category");
-      let alleleRow2 = document.createElement("tr");
-      alleleRow2.setAttribute("id", "category2");
-      let checks = document.createElement("tr");
-
-      var newTableData = [
-        {
-          marker: "Parent Name",
-          rank: rightId,
-          allele: dataVal1,
-          ideal: "Ideal Haplotype",
-        },
-        ...allele_states1[a],
-        {
-          marker: "Category",
-          rank: rightId,
-          allele: allele_states1[a][1]["category"],
-          ideal: "",
-          category: "",
-        },
-      ];
-      var newTableData1 = [
-        { marker: "Parent Name", rank: rightId, allele: dataVal2 },
-        ...allele_states2[b],
-        {
-          marker: "Category",
-          rank: rightId,
-          allele: allele_states2[b][1]["category"],
-          ideal: "",
-          category: "",
-        },
-      ];
-
-      //  console.log(checked[m][1])
-      console.log(newTableData);
-      console.log(newTableData1);
-      alleleTable1.push(newTableData);
-      alleleTable2.push(newTableData1);
-      console.log(alleleTable1);
-
-      const ids = newTableData.map((o) => o.marker);
-      const filtered = newTableData.filter(
-        ({ marker }, index) => !ids.includes(marker, index + 1)
-      );
-      const ids2 = newTableData1.map((o) => o.marker);
-      const filtered2 = newTableData1.filter(
-        ({ marker }, index) => !ids2.includes(marker, index + 1)
-      );
-
-      console.log(filtered2);
-
-      // eslint-disable-next-line no-loop-func
-      filtered.forEach(function (marker) {
-        let header = document.createElement("th");
-        header.setAttribute("class", "ml-2");
-        let alleleHeader = document.createElement("td");
-        let allelehaplo = document.createElement("td");
-        allelehaplo.setAttribute("id", "ideal");
-
-        header.innerHTML = marker.marker;
-        alleleHeader.innerHTML = marker.allele;
-        allelehaplo.innerHTML = marker.ideal;
-        row.appendChild(header);
-        alleleRow1.appendChild(alleleHeader);
-        idealHaplo.appendChild(allelehaplo);
-        table.appendChild(thead);
-        table.appendChild(tbody);
-        thead.appendChild(row);
-        tbody.appendChild(idealHaplo);
-        tbody.appendChild(alleleRow1);
-        // console.log(news);
-      });
-
-      // eslint-disable-next-line no-loop-func
-      filtered2.forEach(function (allele) {
-        let alleleHeader2 = document.createElement("td");
-        alleleHeader2.innerHTML = allele.allele;
-        alleleRow2.appendChild(alleleHeader2);
-        tbody.appendChild(alleleRow2);
-        table.appendChild(tbody);
-      });
-      for (var i = 0; i < parentss.length; i++) {
-        if (parentss[i][0].marker === allele_states1[a][0].marker) {
-          rightId = parentss[i][0].prescription;
-          break;
-        } else {
-          rightId = hhh[j].value;
-        }
-      }
-      // console.log(this.state.analys)
-
-      axios
-        .get(
-          "/api/v1/haplotype_two_parents/" +
-            clientId +
-            "&" +
-            dataVal1 +
-            "&" +
-            dataVal2 +
-            "&" +
-            rightId
-        )
-        // eslint-disable-next-line no-loop-func
-        .then((response) => {
-          console.log({ marker: "", compare: "" }, ...response.data);
-          checkss = [{ marker: "", compare: "" }, ...response.data];
-          checkss.forEach(function (check) {
-            let checkRow = document.createElement("td");
-
-            if (check.compare === "none") {
-              checkRow.innerHTML = "";
-            } else if (check.compare === "wrong") {
-              checkRow.innerHTML = '<i class="bi bi-x-circle icon-red"></i>';
-            } else if (check.compare === "right") {
-              checkRow.innerHTML = '<i class="bi bi-check-lg icon-green"></i>';
-            }
-            // checkRow.innerHTML = check.compare;
-            console.log(check.compare);
-            checks.appendChild(checkRow);
-            tbody.appendChild(checks);
-            table.appendChild(tbody);
-          });
-
-          console.log(checkss);
-
-          const getNones = checkss.filter(
-            (character) => character.compare === "none"
-          );
-          nones.push(...getNones);
-
-          console.log(nones);
-        })
-
-        .catch((error) => {});
-
-      document.getElementById("showData").appendChild(table);
-      document.getElementById("forecastBtn").style.display = "flex";
-    }
   }
 
   getForecast() {
@@ -380,114 +398,133 @@ export default class Cross extends React.Component {
   }
 
   CrossTable(e) {
-    // get columns
-    if (parentss.length > 1) {
-      var hhh = JSON.parse(localStorage.getItem("priscribe") || "[]");
-      console.log(hhh);
-    }
-    var prescriptions = [];
-    var tableHeader = [];
-    prescriptions.length = 0;
-    var seedling = document.getElementById("numSeed").value;
-    var crossId = document.getElementById("crossID").value;
-    console.log(seedling, crossId);
-    var sampleCost = (nones.length * 0.3 * seedling).toFixed(2);
-    console.log(sampleCost);
-    nones.forEach((prescription) => {
-      prescriptions.push(prescription.marker);
-    });
-    console.log(prescriptions);
-    var header = [
-      "Cross ID",
-      "Parent 1",
-      "Parent 2",
-      "Number of Seedlings",
-      "Cost $",
-      "Prescription",
-      "Forecast",
-    ];
-
-    //build for forecast
-    var forecastPercent = [];
-    var rowList = [
-      crossId,
-      dataVal1,
-      dataVal2,
-      seedling,
-      sampleCost,
-      prescriptions.join(" "),
-    ];
-
-    for (
-      var i = 0, u = 0;
-      i < charts.length, u < crossTableForecast.length;
-      i++, u++
-    ) {
-      let obj = crossTableForecast[u].find((o) => o.forecast);
-      // console.log(Object.values(obj).join());
-      console.log(charts);
-
-      var arrWithForecast = charts[i].map((object) => {
-        return {
-          x: object.x,
-          value: object.value / 10 + " %",
-          forecast: Object.values(obj).join(),
-        };
+    try {
+      if (parentss.length > 1) {
+        var hhh = JSON.parse(localStorage.getItem("priscribe") || "[]");
+        console.log(hhh);
+      }
+      var prescriptions = [];
+      var tableHeader = [];
+      prescriptions.length = 0;
+      var seedling = document.getElementById("numSeed").value;
+      var crossId = document.getElementById("crossID").value;
+      console.log(seedling, crossId);
+      var sampleCost = (nones.length * 0.3 * seedling).toFixed(2);
+      console.log(sampleCost);
+      nones.forEach((prescription) => {
+        prescriptions.push(prescription.marker);
       });
-      console.log(arrWithForecast);
-      var newForecast = arrWithForecast.reduce(
-        (data, item) =>
-          Object.assign(data, Object.values(obj), { [item.x]: item.value }),
-        {}
+      var crossTableForecast = JSON.parse(
+        localStorage.getItem("crossForecast")
       );
-      // rename to Forecast Key
-      function renameKeys(obj, newKeys) {
-        const keyValues = Object.keys(obj).map((key) => {
-          const newKey = newKeys[key] || key;
-          return { [newKey]: obj[key] };
+      var charts = JSON.parse(localStorage.getItem("charts"));
+      console.log(prescriptions, crossTableForecast);
+      var header = [
+        "Cross ID",
+        "Parent 1",
+        "Parent 2",
+        "Number of Seedlings",
+        "Cost $",
+        "Prescription",
+        "Forecast",
+      ];
+
+      //build for forecast
+      var forecastPercent = [];
+      var rowList = [
+        crossId,
+        dataVal1,
+        dataVal2,
+        seedling,
+        sampleCost,
+        prescriptions.join(" "),
+      ];
+
+      for (
+        var i = 0, u = 0;
+        i < charts.length, u < crossTableForecast.length;
+        i++, u++
+      ) {
+        let obj = crossTableForecast[u].find((o) => o.forecast);
+        console.log(Object.values(obj).join());
+        console.log(charts);
+
+        var arrWithForecast = charts[i].map((object) => {
+          return {
+            x: object.x,
+            value: object.value / 10 + " %",
+            forecast: Object.values(obj).join(),
+          };
         });
-        return Object.assign({}, ...keyValues);
+        console.log(arrWithForecast);
+        var newForecast = arrWithForecast.reduce(
+          (data, item) =>
+            Object.assign(data, Object.values(obj), { [item.x]: item.value }),
+          {}
+        );
+        // rename to Forecast Key
+        function renameKeys(obj, newKeys) {
+          const keyValues = Object.keys(obj).map((key) => {
+            const newKey = newKeys[key] || key;
+            return { [newKey]: obj[key] };
+          });
+          return Object.assign({}, ...keyValues);
+        }
+        const newKeys = { 0: "Forecast" };
+        const renamedObj = renameKeys(newForecast, newKeys);
+        console.log(renamedObj);
+
+        var stringifiedObj = Object.entries(renamedObj)
+          .map((x) => x.join(":"))
+          .join("     ");
+
+        console.log(newForecast);
+
+        rowList.push(stringifiedObj);
+        console.log(rowList);
       }
-      const newKeys = { 0: "Forecast" };
-      const renamedObj = renameKeys(newForecast, newKeys);
-      console.log(renamedObj);
 
-      var stringifiedObj = Object.entries(renamedObj)
-        .map((x) => x.join(":"))
-        .join("     ");
+      //build cross table
+      var headerExists = document.getElementById("thead-Cross");
+      var table = document.getElementById("crossTable");
+      if (headerExists != null) {
+        var row = table.insertRow();
+        for (var i = 0; i < rowList.length; i++) {
+          var cell = row.insertCell(i);
+          cell.innerHTML = rowList[i];
+        }
+      } else {
+        var rows = table.insertRow();
+        for (var i = 0; i < rowList.length; i++) {
+          var cellss = rows.insertCell(i);
+          cellss.innerHTML = rowList[i];
+        }
+        var headers = table.createTHead();
+        headers.setAttribute("class", "thead-dark");
+        headers.setAttribute("id", "thead-Cross");
+        var hrow = headers.insertRow();
+        for (var w = 0; w < header.length; w++) {
+          var cells = hrow.insertCell(w);
+          cells.innerHTML = header[w];
+        }
 
-      console.log(newForecast);
-
-      rowList.push(stringifiedObj);
-      console.log(rowList);
+        document.getElementById("csv").style.display = "block";
+      }
+    } catch {
+      swal({
+        title: "Error",
+        text: "Make sure you have the correct Data",
+        icon: "error",
+        button: "Ok",
+      }).then((okay) => {
+        if (okay) {
+          this.props.history.push("/Orion");
+        } else {
+          this.props.history.push("/Orion");
+        }
+      });
     }
-
-    //build cross table
-    var headerExists = document.getElementById("thead-Cross");
-    var table = document.getElementById("crossTable");
-    if (headerExists != null) {
-      var row = table.insertRow();
-      for (var i = 0; i < rowList.length; i++) {
-        var cell = row.insertCell(i);
-        cell.innerHTML = rowList[i];
-      }
-    } else {
-      var rows = table.insertRow();
-      for (var i = 0; i < rowList.length; i++) {
-        var cellss = rows.insertCell(i);
-        cellss.innerHTML = rowList[i];
-      }
-      var headers = table.createTHead();
-      headers.setAttribute("class", "thead-dark");
-      headers.setAttribute("id", "thead-Cross");
-      var hrow = headers.insertRow();
-      for (var w = 0; w < header.length; w++) {
-        var cells = hrow.insertCell(w);
-        cells.innerHTML = header[w];
-      }
-
-      document.getElementById("csv").style.display = "block";
-    }
+    // get columns
   }
 
   exportToCsv() {
@@ -532,68 +569,98 @@ export default class Cross extends React.Component {
   }
 
   getAlleteStatesP1(data) {
-    allele_states1.length = 0;
-    newData.length = 0;
-    var clientId = localStorage.getItem("clientID");
+    try {
+      allele_states1.length = 0;
+      newData.length = 0;
+      var clientId = localStorage.getItem("clientID");
 
-    for (var i = 0; i < parentss.length; i++) {
-      // console.log(parentss[i]);
-      // console.log(dataVal1);
-      let prescription = parentss[i].find((x) => x.prescription);
-      newData.push(prescription.prescription);
-    }
-    for (var a = 0; a < newData.length; a++) {
-      axios
-        .get(
-          "/api/v1/haplotypeparent_trait/" +
-            clientId +
-            "&" +
-            data +
-            "&" +
-            newData[a]
-        )
-        .then((response) => {
-          // swtched.push(JSON.(response.data))
-          var filteredData = this.getUniqueListBy(response.data, "marker");
-          allele_states1.push(filteredData);
-          console.log(allele_states1);
+      for (var i = 0; i < parentss.length; i++) {
+        // console.log(parentss[i]);
+        // console.log(dataVal1);
+        let prescription = parentss[i].find((x) => x.prescription);
+        newData.push(prescription.prescription);
+      }
+      for (var a = 0; a < newData.length; a++) {
+        axios
+          .get(
+            "/api/v1/haplotypeparent_trait/" +
+              clientId +
+              "&" +
+              data +
+              "&" +
+              newData[a]
+          )
+          .then((response) => {
+            // swtched.push(JSON.(response.data))
+            var filteredData = this.getUniqueListBy(response.data, "marker");
+            allele_states1.push(filteredData);
+            console.log(allele_states1);
 
-          this.setState({ selected: false });
-        })
-        .catch((error) => {});
+            this.setState({ selected: false });
+          })
+          .catch((error) => {});
+      }
+    } catch {
+      swal({
+        title: "Error",
+        text: "Make sure you have the correct Data",
+        icon: "error",
+        button: "Ok",
+      }).then((okay) => {
+       if (okay) {
+         this.props.history.push("/Orion");
+       } else {
+         this.props.history.push("/Orion");
+       }
+      });
     }
   }
 
   getAlleteStatesP2(data) {
-    allele_states2.length = 0;
-    newData.length = 0;
-    var clientId = localStorage.getItem("clientID");
+    try {
+      allele_states2.length = 0;
+      newData.length = 0;
+      var clientId = localStorage.getItem("clientID");
 
-    for (var i = 0; i < parentss.length; i++) {
-      // console.log(parentss[i]);
-      // console.log(dataVal1);
-      let prescription = parentss[i].find((x) => x.prescription);
-      newData.push(prescription.prescription);
-    }
-    for (var a = 0; a < newData.length; a++) {
-      axios
-        .get(
-          "/api/v1/haplotypeparent_trait/" +
-            clientId +
-            "&" +
-            data +
-            "&" +
-            newData[a]
-        )
-        .then((response) => {
-          // swtched.push(JSON.(response.data))
-          var filteredData = this.getUniqueListBy(response.data, "marker");
-          allele_states2.push(filteredData);
-          console.log(allele_states2);
-          // console.log(swtched);
-          this.setState({ selectedP2: false });
-        })
-        .catch((error) => {});
+      for (var i = 0; i < parentss.length; i++) {
+        // console.log(parentss[i]);
+        // console.log(dataVal1);
+        let prescription = parentss[i].find((x) => x.prescription);
+        newData.push(prescription.prescription);
+      }
+      for (var a = 0; a < newData.length; a++) {
+        axios
+          .get(
+            "/api/v1/haplotypeparent_trait/" +
+              clientId +
+              "&" +
+              data +
+              "&" +
+              newData[a]
+          )
+          .then((response) => {
+            // swtched.push(JSON.(response.data))
+            var filteredData = this.getUniqueListBy(response.data, "marker");
+            allele_states2.push(filteredData);
+            console.log(allele_states2);
+            // console.log(swtched);
+            this.setState({ selectedP2: false });
+          })
+          .catch((error) => {});
+      }
+    } catch {
+      swal({
+        title: "Error",
+        text: "Make sure you have the correct Data",
+        icon: "error",
+        button: "Ok",
+      }).then((okay) => {
+        if (okay) {
+          this.props.history.push("/Orion");
+        } else {
+          this.props.history.push("/Orion");
+        }
+      });
     }
   }
 
@@ -605,6 +672,10 @@ export default class Cross extends React.Component {
   handleChangeP2 = (selectedOptionsP2) => {
     this.setState({ selectedOptionsP2 });
     this.setState({ selectedP2: true });
+  };
+
+  onGoBack = () => {
+    this.props.history.push("/Orion");
   };
 
   render() {
@@ -636,6 +707,17 @@ export default class Cross extends React.Component {
         ) : (
           <>
             <Box display="flex" alignItems="center" justifyContent="center">
+              <Paper
+                elevation={12}
+                style={{
+                  width: "4%",
+                  height: "56px",
+                  marginTop: "1em",
+                  marginRight: "4em",
+                }}
+              >
+                <Button onClick={this.onGoBack}>Select traits</Button>
+              </Paper>
               <Paper
                 elevation={12}
                 style={{
@@ -782,7 +864,6 @@ export default class Cross extends React.Component {
               </Grid>
             </Paper>
 
-          
             <Grid
               id="mainContainer"
               container

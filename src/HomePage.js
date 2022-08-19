@@ -23,7 +23,9 @@ const Item = styled(Paper)(({ theme }) => ({
   width: "50%",
 }));
 
-axios.defaults.baseURL = "http://192.168.128.184:8002/";
+// axios.defaults.baseURL = "http://192.168.128.184:8002/";
+axios.defaults.baseURL = "http://65.155.58.188:3000/";
+
 var traits = [];
 var crops = [];
 var markers = [];
