@@ -162,7 +162,7 @@ export default class Cross extends React.Component {
         let newParent = parentss[i];
         for (var j = 0; j < newParent.length; j++) {
           axios
-            .get("/api/v1/haplotypeparent/" + clientId + "&" + newParent[j].id)
+            .get("/api/v1/haplotypeparent/" + clientId + "&" + newParent[j].id + "/")
             .then((response) => {
               parents.push(...response.data);
               console.log(response.data.length);
@@ -332,7 +332,7 @@ export default class Cross extends React.Component {
               "&" +
               dataVal2 +
               "&" +
-              rightId
+              rightId + "/"
           )
           // eslint-disable-next-line no-loop-func
           .then((response) => {
@@ -588,7 +588,7 @@ export default class Cross extends React.Component {
               "&" +
               data +
               "&" +
-              newData[a]
+              newData[a] + "/"
           )
           .then((response) => {
             // swtched.push(JSON.(response.data))
@@ -636,7 +636,7 @@ export default class Cross extends React.Component {
               "&" +
               data +
               "&" +
-              newData[a]
+              newData[a] + "/"
           )
           .then((response) => {
             // swtched.push(JSON.(response.data))

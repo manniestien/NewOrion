@@ -51,7 +51,7 @@ export default class BuildChart extends Component {
           "&" +
           this.props.data2 +
           "&" +
-          this.props.traits[element].value
+          this.props.traits[element].value + "/"
       );
       promises.push(result, this.props.traits[element].label);
       console.log(await (await result).data, this.props.traits[element].label);

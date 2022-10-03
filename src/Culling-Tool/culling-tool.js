@@ -10,8 +10,8 @@ import bella from '../asserts/favicon 2.ico'
 
 
 
-
-axios.defaults.baseURL = "http://65.155.58.188:3000/";
+//axios.defaults.baseURL = "http://192.168.128.184:8002/";
+axios.defaults.baseURL = "https://www.orionbackend.com/";
 var traits = [];
 var crops = [];
 var markers = [];
@@ -19,7 +19,7 @@ var categories = []
 var cullFigure = ''
 var newCategories = []
 var seedlingsData = []
-const seasonOption = [{label:'Summer', value:'1'}, {label:'Spring', value:'2'}]
+const seasonOption = [{ label: 'Summer', value: '1' }, { label: 'Spring', value: '2' }]
 
 
 
@@ -80,7 +80,7 @@ export class Home extends Component {
     // console.log(clientsID)
   }
 
-  getExcelData() {}
+  getExcelData() { }
 
   routeChange() {
     this.props.history.push("/cross");
@@ -190,7 +190,7 @@ export class Home extends Component {
           return { value: crop.id, label: crop.crop };
         });
       })
-      .catch((error) => {});
+      .catch((error) => { });
   };
 
   handleChangeCrop = (selectedOptionCrop) => {
@@ -212,7 +212,7 @@ export class Home extends Component {
           return { value: trait.id, label: trait.prescription };
         });
       })
-      .catch((error) => {});
+      .catch((error) => { });
   };
 
   handleTraits = (selectedOptionTrait) => {
@@ -411,5 +411,5 @@ Home.propTypes = {
 };
 const mapStateToProps = (state) => ({ clients: state.clients, clientsID: state.clientTraits });
 
-export default connect(mapStateToProps, {getUsers, getClientTraits})(Home)
+export default connect(mapStateToProps, { getUsers, getClientTraits })(Home)
 

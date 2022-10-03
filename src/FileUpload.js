@@ -94,26 +94,26 @@ export default class FileUpload extends React.Component {
         const res = await Promise.all([
           axios.get(
             "/api/v1/haplotype_two_parents/" +
-              this.props.clientID +
-              "&" +
-              datas.parent1 +
-              "&" +
-              datas.parent2 +
-              "&" +
-              this.props.traits[element].value
+            this.props.clientID +
+            "&" +
+            datas.parent1 +
+            "&" +
+            datas.parent2 +
+            "&" +
+            this.props.traits[element].value + "/"
           ),
         ]);
 
         const res1 = await Promise.all([
           axios.get(
             "/api/v1/haplotype_forecast/" +
-              this.props.clientID +
-              "&" +
-              datas.parent1 +
-              "&" +
-              datas.parent2 +
-              "&" +
-              this.props.traits[element].value
+            this.props.clientID +
+            "&" +
+            datas.parent1 +
+            "&" +
+            datas.parent2 +
+            "&" +
+            this.props.traits[element].value + "/"
           ),
         ]);
         finalPrescription.length = 0;
@@ -196,18 +196,18 @@ export default class FileUpload extends React.Component {
         console.log(rowList);
         getRow.push(rowList);
       } catch {
-         swal({
-           title: "Error",
-           text: "Make sure you have the correct Data",
-           icon: "error",
-           button: "Ok",
-         }).then((okay) => {
-           if (okay) {
-             window.location = "/Orion";
-           } else {
-             window.location = "/Orion";
-           }
-         });
+        swal({
+          title: "Error",
+          text: "Make sure you have the correct Data",
+          icon: "error",
+          button: "Ok",
+        }).then((okay) => {
+          if (okay) {
+            window.location = "/Orion";
+          } else {
+            window.location = "/Orion";
+          }
+        });
       }
     }
     if (getRow.length === dataLength * this.props.traits.length) {

@@ -23,8 +23,8 @@ const Item = styled(Paper)(({ theme }) => ({
   width: "50%",
 }));
 
-// axios.defaults.baseURL = "http://192.168.128.184:8002/";
-axios.defaults.baseURL = "http://65.155.58.188:3000/";
+//axios.defaults.baseURL = "http://192.168.128.184:8002/";
+axios.defaults.baseURL = "https://www.orionbackend.com/";
 
 var traits = [];
 var crops = [];
@@ -78,19 +78,19 @@ export class HomePage extends React.Component {
     this.props.history.push("/cross");
   }
   onChangeHandler = (event) => {
-   var lines = []
-   
-      // Passing file data (event.target.files[0]) to parse using Papa.parse
-      Papa.parse(event.target.files[0], {
-        header: true,
-        skipEmptyLines: true,
-        complete: function (results) {
-          console.log(results.data)
-          lines.push(results.data)
-        },
-        
-      });
-      this.setState({linesFromFile: lines})
+    var lines = []
+
+    // Passing file data (event.target.files[0]) to parse using Papa.parse
+    Papa.parse(event.target.files[0], {
+      header: true,
+      skipEmptyLines: true,
+      complete: function (results) {
+        console.log(results.data)
+        lines.push(results.data)
+      },
+
+    });
+    this.setState({ linesFromFile: lines })
 
   };
 
@@ -121,58 +121,58 @@ export class HomePage extends React.Component {
       axios
         .get(
           "/api/v1/assaypositions/" +
-            localStorage.getItem("clientID") +
-            "&" +
-            this.state.selectedOptionTrait[i].value
+          localStorage.getItem("clientID") +
+          "&" +
+          this.state.selectedOptionTrait[i].value + "/"
         )
         // eslint-disable-next-line no-loop-func
         .then((response) => {
           // parentss.push(response.data);
           traitsData.push(response.data);
-         // console.log(traitsData);
+          // console.log(traitsData);
           this.getMarkers(traitsData);
           setTimeout()
           // this.props.history.push("/cross/?" + searchParams.toString(), state:{parentData: parentData});
-          
-          
-          
-        })
-        .catch((error) => {});
 
-        
+
+
+        })
+        .catch((error) => { });
+
+
     }
-    
+
   };
 
   getMarkers(data) {
-    parentData.length= 0
+    parentData.length = 0
     for (var i = 0; i < data.length; i++) {
       let newParent = data[i];
       for (var j = 0; j < newParent.length; j++) {
         axios
           .get(
             "/api/v1/haplotypeparent/" +
-              localStorage.getItem("clientID") +
-              "&" +
-              newParent[j].id
+            localStorage.getItem("clientID") +
+            "&" +
+            newParent[j].id + "/"
           )
           .then((response) => {
             parentData.push(...response.data);
-           // console.log(response.data);
-           //console.log(parentData);
-            this.setState({sendData: true})
+            // console.log(response.data);
+            //console.log(parentData);
+            this.setState({ sendData: true })
 
-           
+
           })
-          
-          .catch((error) => {});
-          
+
+          .catch((error) => { });
+
       }
-            this.setState({ parentLines: parentData });
+      this.setState({ parentLines: parentData });
 
     }
 
-    
+
   }
 
   handleChange = (selectedOptionSub) => {
@@ -180,14 +180,14 @@ export class HomePage extends React.Component {
     console.log(`Option selected:`, selectedOptionSub.value);
     localStorage.setItem("clientID", selectedOptionSub.value);
     axios
-      .get("/api/v1/crops/" + selectedOptionSub.value)
+      .get("/api/v1/crops/" + selectedOptionSub.value + "/")
       .then((response) => {
         console.log(response.data);
         crops = response.data.map(function (crop) {
           return { value: crop.id, label: crop.crop };
         });
       })
-      .catch((error) => {});
+      .catch((error) => { });
   };
 
   handleChangeCrop = (selectedOptionCrop) => {
@@ -197,18 +197,18 @@ export class HomePage extends React.Component {
     var cropId = localStorage.getItem("cropID");
 
     axios
-      .get("/api/v1/prescriptions/" + clientId + "&" + selectedOptionCrop.value)
+      .get("/api/v1/prescriptions/" + clientId + "&" + selectedOptionCrop.value + "/")
       .then((response) => {
         console.log(response.data);
         console.log(
-          "/api/v1/prescriptions/" + clientId + "&" + selectedOptionCrop.value
+          "/api/v1/prescriptions/" + clientId + "&" + selectedOptionCrop.value + "/"
         );
 
         traits = response.data.map(function (trait) {
           return { value: trait.id, label: trait.prescription };
         });
       })
-      .catch((error) => {});
+      .catch((error) => { });
   };
 
   handleTraits = (selectedOptionTrait) => {
@@ -283,15 +283,15 @@ export class HomePage extends React.Component {
         <div>
           {this.state.sendData ? (
 
-          this.props.history.push({
-            pathname: "/cross",
-            // search: searchParams.toString(),
-            state: this.state.parentLines,
-            dddd: traitsData,
-            lineData: this.state.linesFromFile
-          })
-          
-          
+            this.props.history.push({
+              pathname: "/cross",
+              // search: searchParams.toString(),
+              state: this.state.parentLines,
+              dddd: traitsData,
+              lineData: this.state.linesFromFile
+            })
+
+
           ) : null}
         </div>
       </div>

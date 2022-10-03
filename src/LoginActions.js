@@ -14,8 +14,8 @@ import { setAxiosAuthToken, toastOnError } from "./Utils";
 import { propTypes } from "react-bootstrap/esm/Image";
 import HomePage from "./HomePage";
 
-// axios.defaults.baseURL = "http://192.168.128.184:8002/";
-axios.defaults.baseURL = "http://65.155.58.188:3000/";
+//axios.defaults.baseURL = "http://192.168.128.184:8002/";
+axios.defaults.baseURL = "https://www.orionbackend.com/";
 
 export const login = (userData, redirectTo) => (dispatch) => {
   console.log(userData);
@@ -77,20 +77,20 @@ export const setToken = (token) => (dispatch) => {
 export const PI = [];
 
 export const getClients = () => (dispatch) => {
-      axios
-        .get("/api/v1/administrate/" + 5)
-        .then((response) => {
-          console.log(response.data);
-          dispatch({
-            type: GET_CLIENTS,
-            payload: response.data,
-          });
-        })
-        .catch((error) => {
-          toastOnError(error);
-        });
+  axios
+    .get("/api/v1/administrate/" + 5)
+    .then((response) => {
+      console.log(response.data);
+      dispatch({
+        type: GET_CLIENTS,
+        payload: response.data,
+      });
+    })
+    .catch((error) => {
+      toastOnError(error);
+    });
 }
-  
+
 
 
 export const unsetCurrentUser = () => (dispatch) => {
@@ -131,10 +131,10 @@ export const getUsers = () => async (dispatch) => {
 };
 export const getClientTraits = () => async (dispatch) => {
   const clientId = localStorage.getItem('clientID')
- // console.log(clientId)
+  // console.log(clientId)
   try {
     const res = await axios.get("/api/v1/administrate/");
-   // console.log(res.data);
+    // console.log(res.data);
     dispatch({
       type: GET_CLIENTS_TRAITS,
       payload: res.data,
